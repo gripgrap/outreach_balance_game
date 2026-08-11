@@ -1,3 +1,8 @@
+/**
+ * File: app/final/page.tsx
+ * 행사 종료 후 질문별 결과와 하이라이트를 슬라이드로 보여 주는 화면이다.
+ */
+
 "use client";
 
 import { useEffect, useState, useCallback } from "react";

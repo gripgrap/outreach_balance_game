@@ -1,3 +1,8 @@
+/**
+ * File: lib/requireAdmin.ts
+ * 관리자 API에서 공통으로 사용하는 인증 차단 응답을 만든다.
+ */
+
 import { NextResponse } from "next/server";
 import { isAdminAuthed } from "./adminAuth";
 

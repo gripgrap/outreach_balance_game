@@ -1,3 +1,8 @@
+/**
+ * File: tailwind.config.ts
+ * 행사 브랜드 색상, 글꼴, 애니메이션과 스캔 경로를 정의한다.
+ */
+
 import type { Config } from "tailwindcss";
 
 const config: Config = {

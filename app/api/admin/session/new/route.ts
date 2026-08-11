@@ -1,3 +1,8 @@
+/**
+ * File: app/api/admin/session/new/route.ts
+ * 기존 데이터를 보존하면서 새 현재 세션을 만드는 관리자 API다.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";

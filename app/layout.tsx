@@ -1,3 +1,8 @@
+/**
+ * File: app/layout.tsx
+ * 모든 화면에 공통 메타데이터와 전역 스타일을 적용하는 루트 레이아웃이다.
+ */
+
 import type { Metadata } from "next";
 import { Black_Han_Sans, Gothic_A1, Nanum_Pen_Script } from "next/font/google";
 import "./globals.css";

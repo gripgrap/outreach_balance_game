@@ -1,3 +1,8 @@
+/**
+ * File: app/api/admin/questions/[id]/route.ts
+ * 질문과 해당 질문의 투표를 삭제하는 관리자 API다.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";

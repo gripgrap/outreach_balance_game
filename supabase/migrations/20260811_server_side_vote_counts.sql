@@ -1,3 +1,4 @@
+-- File: supabase/migrations/20260811_server_side_vote_counts.sql - 공개 집계 RPC를 서버 전용 API 방식으로 전환한다.
 -- 공개 SECURITY DEFINER 집계 RPC를 서버 전용 집계 API로 대체한다.
 drop function if exists public.get_vote_counts(uuid);
 

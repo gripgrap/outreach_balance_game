@@ -1,3 +1,8 @@
+/**
+ * File: lib/useActiveQuestion.ts
+ * 현재 질문을 Realtime으로 추적하고 연결 장애 시 폴링으로 복구한다.
+ */
+
 "use client";
 
 import { useEffect, useState } from "react";

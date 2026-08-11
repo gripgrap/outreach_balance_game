@@ -1,3 +1,8 @@
+/**
+ * File: scripts/load-test.mjs
+ * 활성 질문에 지정 인원의 가상 투표를 보내 성공률과 응답 시간을 측정한다.
+ */
+
 import { createClient } from "@supabase/supabase-js";
 
 function readOption(name, fallback) {

@@ -1,9 +1,15 @@
+/**
+ * File: app/admin/page.tsx
+ * 행사 담당자가 세션·질문·투표·결과 내보내기를 관리하는 관리자 화면이다.
+ */
+
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
 import type { QuestionWithResults, Session } from "@/lib/types";
 import { BrandHeader } from "@/components/BrandHeader";
 import { AdminGuide } from "@/components/AdminGuide";
+import { buildResultCopyText, buildResultCsv, resultFilename } from "@/lib/exportResults";
 
 async function api(path: string, options?: RequestInit) {
   const res = await fetch(path, {
@@ -23,6 +29,7 @@ export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [questions, setQuestions] = useState<QuestionWithResults[]>([]);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [exportNotice, setExportNotice] = useState<string | null>(null);
 
   const [newA, setNewA] = useState("");
   const [newAEmoji, setNewAEmoji] = useState("");
@@ -183,6 +190,33 @@ export default function AdminPage() {
     }
   }
 
+  async function handleCopyResults() {
+    if (!session) return;
+    setExportNotice(null);
+    try {
+      await navigator.clipboard.writeText(buildResultCopyText(session, questions));
+      setExportNotice("결과를 클립보드에 복사했습니다.");
+    } catch {
+      setExportNotice("복사하지 못했습니다. Excel용 CSV 다운로드를 사용해 주세요.");
+    }
+  }
+
+  function handleDownloadResults() {
+    if (!session) return;
+    const blob = new Blob([buildResultCsv(session, questions)], {
+      type: "text/csv;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = resultFilename(session);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setExportNotice("Excel용 CSV 파일을 저장했습니다.");
+  }
+
   if (authed === null) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-bg">
@@ -285,6 +319,34 @@ export default function AdminPage() {
                   전체 투표 초기화
                 </button>
               </div>
+            </section>
+
+            <section className="bg-bg-card border border-sage/30 rounded-2xl p-5 sm:p-6 mb-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-ivory font-bold">결과 보관</p>
+                  <p className="text-sage text-sm mt-1">
+                    행사 종료 후 질문별 표와 비율을 복사하거나 Excel용 파일로 저장합니다.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:flex">
+                  <button
+                    onClick={handleCopyResults}
+                    disabled={!questions.some((question) => question.counts.total > 0)}
+                    className="min-h-11 border border-gold/40 text-gold rounded-xl px-4 py-2 text-sm disabled:opacity-40"
+                  >
+                    결과 복사
+                  </button>
+                  <button
+                    onClick={handleDownloadResults}
+                    disabled={!questions.some((question) => question.counts.total > 0)}
+                    className="min-h-11 bg-gold text-bg font-bold rounded-xl px-4 py-2 text-sm disabled:opacity-40"
+                  >
+                    Excel용 CSV
+                  </button>
+                </div>
+              </div>
+              {exportNotice && <p className="text-sage text-sm mt-3" role="status">{exportNotice}</p>}
             </section>
 
             <section className="bg-bg-card border border-sage/30 rounded-2xl p-5 sm:p-6 mb-6">

@@ -1,3 +1,8 @@
+/**
+ * File: app/results/page.tsx
+ * 프로젝터에서 현재 질문의 카운트다운과 종료 결과를 표시하는 화면이다.
+ */
+
 "use client";
 
 import { useEffect, useState } from "react";

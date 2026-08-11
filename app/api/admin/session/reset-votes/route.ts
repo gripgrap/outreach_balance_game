@@ -1,3 +1,8 @@
+/**
+ * File: app/api/admin/session/reset-votes/route.ts
+ * 현재 세션의 모든 투표와 질문 진행 상태를 초기화하는 관리자 API다.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";

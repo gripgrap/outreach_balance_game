@@ -1,3 +1,5 @@
+# File: .github/workflows/ci.yml - Pull Request와 main 배포 전 린트·빌드를 검증한다.
+
 name: CI
 
 on:

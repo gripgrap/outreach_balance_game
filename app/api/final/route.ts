@@ -1,3 +1,8 @@
+/**
+ * File: app/api/final/route.ts
+ * 최종 발표 화면에 질문별 집계와 하이라이트를 제공하는 API다.
+ */
+
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 

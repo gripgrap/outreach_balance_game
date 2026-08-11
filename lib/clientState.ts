@@ -1,3 +1,8 @@
+/**
+ * File: lib/clientState.ts
+ * 참가자 브라우저의 닉네임과 질문별 투표 여부를 로컬에 저장한다.
+ */
+
 "use client";
 
 const TOKEN_KEY = "bg_client_token";

@@ -1,3 +1,8 @@
+/**
+ * File: lib/useVoteCounts.ts
+ * 발표 화면에서 질문별 집계를 주기적으로 안전하게 불러온다.
+ */
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";

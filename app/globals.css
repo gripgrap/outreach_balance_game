@@ -1,3 +1,5 @@
+/* File: app/globals.css - 전역 색상, 배경 질감, 브랜드 공통 스타일을 정의한다. */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

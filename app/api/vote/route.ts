@@ -1,3 +1,8 @@
+/**
+ * File: app/api/vote/route.ts
+ * 참가자 투표를 검증하고 브라우저별 중복을 막아 저장하는 API다.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { randomUUID } from "crypto";

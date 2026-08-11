@@ -1,3 +1,8 @@
+/**
+ * File: components/BrandHeader.tsx
+ * 모든 주요 화면에서 사용하는 MAPPER 행사 브랜드 헤더다.
+ */
+
 export function BrandHeader({ large = false }: { large?: boolean }) {
   return (
     <div className="brand-lockup text-center">

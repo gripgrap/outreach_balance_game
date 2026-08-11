@@ -1,3 +1,8 @@
+/**
+ * File: app/page.tsx
+ * 참가자가 닉네임을 선택하고 현재 질문에 A·B로 투표하는 모바일 화면이다.
+ */
+
 "use client";
 
 import { useEffect, useState } from "react";
