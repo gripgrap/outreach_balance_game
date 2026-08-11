@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-bg text-ivory font-body;
+    background-color: #102012;
+    background-image:
+      radial-gradient(ellipse at 18% 90%, rgba(202, 214, 112, 0.22), transparent 35%),
+      radial-gradient(ellipse at 78% 42%, rgba(117, 151, 76, 0.17), transparent 42%),
+      linear-gradient(145deg, #1b351d 0%, #102313 48%, #07160d 100%);
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+  .grain-overlay {
+    position: relative;
+    isolation: isolate;
+  }
+  .grain-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("/grain.svg");
+    background-size: 200px 200px;
+    opacity: 0.72;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .grain-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("/route-map.svg") center / cover no-repeat;
+    opacity: 0.52;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .grain-overlay > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 18px rgba(232, 217, 122, 0.35);
+  }
+}
+
+@layer components {
+  .brand-lockup {
+    @apply flex flex-col items-center;
+  }
+  .brand-eyebrow {
+    @apply text-gold-soft text-[0.68rem] md:text-sm font-bold tracking-[0.38em] uppercase;
+    text-shadow: 0 0 14px rgba(232, 217, 122, 0.35);
+  }
+  .brand-title {
+    @apply mt-2 flex items-center gap-3 font-display text-3xl md:text-5xl tracking-[0.12em] text-ivory;
+  }
+  .brand-title > span {
+    @apply text-gold-soft font-body font-light;
+  }
+  .brand-title-large {
+    @apply text-5xl md:text-8xl;
+  }
+  .brand-subtitle {
+    @apply mt-2 text-[0.68rem] md:text-sm tracking-[0.18em] text-sage;
+  }
+  .forest-panel {
+    @apply border border-ivory/15 bg-[#142819]/80 shadow-2xl backdrop-blur-md;
+    box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28), inset 0 1px rgba(255,255,255,0.04);
+  }
+}
+
+::selection {
+  background: #e8d97a;
+  color: #141b13;
+}
