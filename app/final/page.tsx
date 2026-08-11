@@ -25,12 +25,17 @@ interface FinalData {
 
 export default function FinalDashboard() {
   const [data, setData] = useState<FinalData | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [slide, setSlide] = useState(0); // 0 = intro, 1..n = questions, n+1 = highlights, n+2 = summary
 
   useEffect(() => {
     fetch("/api/final")
-      .then((r) => r.json())
-      .then(setData);
+      .then((r) => {
+        if (!r.ok) throw new Error("final results request failed");
+        return r.json();
+      })
+      .then(setData)
+      .catch(() => setLoadError(true));
   }, []);
 
   const totalSlides = data ? data.questions.length + 3 : 1; // intro + questions + highlights + summary
@@ -47,10 +52,31 @@ export default function FinalDashboard() {
     return () => window.removeEventListener("keydown", onKey);
   }, [next, prev]);
 
-  if (!data || !data.session) {
+  if (loadError) {
+    return (
+      <main className="grain-overlay min-h-screen flex flex-col items-center justify-center px-6 text-center">
+        <BrandHeader large />
+        <p className="text-ivory text-2xl mt-8">결과를 불러오지 못했습니다</p>
+        <p className="text-sage mt-3">잠시 후 화면을 새로고침해주세요</p>
+      </main>
+    );
+  }
+
+  if (!data) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-transparent">
         <p className="text-sage text-2xl animate-pulse">불러오는 중...</p>
+      </main>
+    );
+  }
+
+  if (!data.session) {
+    return (
+      <main className="grain-overlay min-h-screen flex flex-col items-center justify-center px-6 text-center">
+        <BrandHeader large />
+        <p className="font-display text-5xl text-gold text-glow mt-8">FINAL RESULTS</p>
+        <p className="text-ivory text-2xl mt-8">아직 집계할 결과가 없습니다</p>
+        <p className="text-sage mt-3">세션이 시작되면 이 화면에 결과가 표시됩니다</p>
       </main>
     );
   }
