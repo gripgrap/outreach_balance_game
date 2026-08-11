@@ -41,8 +41,6 @@ export async function GET() {
     votes = data ?? [];
   }
 
-  const uniqueParticipants = new Set(votes.map((v) => v.client_token)).size;
-
   const questionsWithResults = (questions ?? []).map((q) => {
     const qVotes = votes.filter((v) => v.question_id === q.id);
     const a = qVotes.filter((v) => v.choice === "A").length;
@@ -53,18 +51,25 @@ export async function GET() {
     return { ...q, counts: { a, b, total }, aPct, bPct, gap: Math.abs(aPct - bPct) };
   });
 
-  const answered = questionsWithResults.filter((q) => q.counts.total > 0);
-  const mostLopsided = answered.length
-    ? answered.reduce((max, q) => (q.gap > max.gap ? q : max))
+  // 최종 발표에는 실제 투표가 있는 질문만 포함해 초안·미진행 질문이 섞이지 않게 한다.
+  const finalQuestions = questionsWithResults.filter((q) => q.counts.total > 0);
+  const finalQuestionIds = new Set(finalQuestions.map((question) => question.id));
+  const uniqueParticipants = new Set(
+    votes
+      .filter((vote) => finalQuestionIds.has(vote.question_id))
+      .map((vote) => vote.client_token)
+  ).size;
+  const mostLopsided = finalQuestions.length
+    ? finalQuestions.reduce((max, q) => (q.gap > max.gap ? q : max))
     : null;
-  const closest = answered.length
-    ? answered.reduce((min, q) => (q.gap < min.gap ? q : min))
+  const closest = finalQuestions.length
+    ? finalQuestions.reduce((min, q) => (q.gap < min.gap ? q : min))
     : null;
 
   return NextResponse.json(
     {
       session,
-      questions: questionsWithResults,
+      questions: finalQuestions,
       totalParticipants: uniqueParticipants,
       mostLopsided,
       closest,

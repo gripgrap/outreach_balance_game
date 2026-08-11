@@ -4,19 +4,19 @@
  */
 
 const steps = [
-  "발표용 컴퓨터에서 ‘결과화면 열기’를 눌러 전체 화면으로 둡니다.",
-  "참가자가 QR로 접속한 것을 확인한 뒤 해당 질문의 ‘투표 시작’을 한 번 누릅니다.",
-  "총 투표 수가 늘어나는지 보고, 시간이 끝나면 ‘지금 종료’를 누릅니다.",
+  "발표용 컴퓨터에서 ‘행사 진행 화면’을 열어 전체 화면으로 둡니다.",
+  "관리자 화면의 ‘지금 할 일’에서 다음 질문의 ‘투표 시작’을 한 번 누릅니다.",
+  "참여 인원이 늘어나는지 보고, 시간이 끝나면 ‘지금 종료’를 누릅니다.",
   "결과를 함께 본 뒤 다음 질문에서 같은 순서를 반복합니다.",
-  "마지막 질문 종료 후 ‘엔딩화면 열기’에서 결과를 넘깁니다.",
+  "마지막 질문 종료 후 ‘최종 결과 발표’에서 결과를 넘깁니다.",
 ];
 
 const faq = [
   ["참가자에게 질문이 안 보여요", "질문이 ‘진행중’인지 확인하고 6초 기다린 뒤 참가자 화면을 새로고침합니다."],
   ["잘못된 질문을 시작했어요", "‘지금 종료’를 누른 다음 올바른 질문의 ‘투표 시작’을 누릅니다."],
-  ["한 질문만 다시 시험할래요", "그 질문의 ‘초기화’를 누르면 해당 질문의 투표만 지워집니다."],
-  ["리허설 투표를 전부 지울래요", "행사 시작 직전에만 ‘전체 투표 초기화’를 한 번 누릅니다."],
-  ["최종 결과를 보관하고 싶어요", "관리자 화면의 ‘결과 보관’에서 결과를 복사하거나 Excel용 CSV를 저장합니다."],
+  ["한 질문만 다시 시험할래요", "질문 카드의 ‘질문 관리’를 열고 ‘이 질문 투표 지우기’를 누릅니다."],
+  ["리허설 투표를 전부 지울래요", "맨 아래 ‘행사 준비·관리’를 열고 전체 초기화를 누른 뒤 확인 문구를 입력합니다."],
+  ["최종 결과를 보관하고 싶어요", "질문 목록 아래 ‘행사 종료 후 결과 보관’에서 복사하거나 Excel용 CSV를 저장합니다."],
   ["휴대전화로 운영해도 되나요", "가능합니다. 다만 관리자 조작은 한 사람만 하고, 결과 화면은 발표용 컴퓨터에 띄우세요."],
 ];
 
@@ -38,8 +38,8 @@ function GuideContents() {
       <section className="rounded-xl border border-red-400/30 bg-red-950/20 p-3">
         <p className="font-bold text-red-200 mb-1">행사 중 누르지 않기</p>
         <p className="text-red-100/80 leading-relaxed">
-          `새 세션`, `전체 투표 초기화`, `삭제`는 되돌리기 어렵습니다. 리허설이 끝난 직후나
-          담당자 확인을 받은 경우에만 사용하세요.
+          `새 세션`, `전체 투표 초기화`, `질문 삭제`는 맨 아래 관리 영역에 있습니다. 리허설이
+          끝난 직후나 담당자 확인을 받은 경우에만 사용하세요.
         </p>
       </section>
 
@@ -58,14 +58,14 @@ function GuideContents() {
       </section>
 
       <div className="grid grid-cols-3 gap-2">
-        <a href="/" target="_blank" className="min-h-11 rounded-xl border border-sage/30 flex items-center justify-center text-sage">
+        <a href="/" target="_blank" rel="noreferrer" className="min-h-11 rounded-xl border border-sage/30 flex items-center justify-center text-sage">
           참가자
         </a>
-        <a href="/results" target="_blank" className="min-h-11 rounded-xl border border-sage/30 flex items-center justify-center text-sage">
-          결과
+        <a href="/results" target="_blank" rel="noreferrer" className="min-h-11 rounded-xl border border-sage/30 flex items-center justify-center text-sage">
+          진행
         </a>
-        <a href="/final" target="_blank" className="min-h-11 rounded-xl border border-sage/30 flex items-center justify-center text-sage">
-          엔딩
+        <a href="/final" target="_blank" rel="noreferrer" className="min-h-11 rounded-xl border border-sage/30 flex items-center justify-center text-sage">
+          최종 발표
         </a>
       </div>
     </div>

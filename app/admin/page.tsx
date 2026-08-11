@@ -118,6 +118,18 @@ export default function AdminPage() {
   }
 
   async function handleStart(id: string) {
+    const target = questions.find((question) => question.id === id);
+    const current = questions.find((question) => question.status === "active");
+    if (
+      target &&
+      current &&
+      current.id !== target.id &&
+      !confirm(
+        `현재 진행 중인 ‘${current.option_a_text} VS ${current.option_b_text}’를 종료하고 이 질문을 시작할까요?`
+      )
+    ) {
+      return;
+    }
     try {
       await api(`/api/admin/questions/${id}/start`, { method: "POST" });
       await loadState();
@@ -160,7 +172,10 @@ export default function AdminPage() {
 
   async function handleResetAll() {
     if (!session) return;
-    if (!confirm("현재 세션의 모든 질문과 투표를 초기화할까요? 되돌릴 수 없습니다.")) return;
+    const confirmation = prompt(
+      "현재 세션의 모든 투표가 삭제되고 질문이 대기 상태로 돌아갑니다. 계속하려면 ‘전체 초기화’를 입력하세요."
+    );
+    if (confirmation?.trim() !== "전체 초기화") return;
     try {
       await api("/api/admin/session/reset-votes", {
         method: "POST",
@@ -217,6 +232,21 @@ export default function AdminPage() {
     setExportNotice("Excel용 CSV 파일을 저장했습니다.");
   }
 
+  const activeQuestion = questions.find((question) => question.status === "active") ?? null;
+  const nextDraftQuestion = questions.find((question) => question.status === "draft") ?? null;
+  const latestEndedQuestion =
+    [...questions].reverse().find((question) => question.status === "ended") ?? null;
+  const activeQuestionIndex = activeQuestion
+    ? questions.findIndex((question) => question.id === activeQuestion.id)
+    : -1;
+  const nextDraftQuestionIndex = nextDraftQuestion
+    ? questions.findIndex((question) => question.id === nextDraftQuestion.id)
+    : -1;
+  const latestEndedQuestionIndex = latestEndedQuestion
+    ? questions.findIndex((question) => question.id === latestEndedQuestion.id)
+    : -1;
+  const hasVotes = questions.some((question) => question.counts.total > 0);
+
   if (authed === null) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-bg">
@@ -259,11 +289,11 @@ export default function AdminPage() {
         <header className="flex flex-col gap-5 items-center mb-8 sm:flex-row sm:justify-between">
           <BrandHeader />
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm sm:justify-end">
-            <a href="/results" target="_blank" className="text-sage underline">
-              결과화면 열기
+            <a href="/results" target="_blank" rel="noreferrer" className="text-sage underline">
+              행사 진행 화면
             </a>
-            <a href="/final" target="_blank" className="text-sage underline">
-              엔딩화면 열기
+            <a href="/final" target="_blank" rel="noreferrer" className="text-sage underline">
+              최종 결과 발표
             </a>
             <button onClick={handleLogout} className="text-sage underline">
               로그아웃
@@ -286,11 +316,14 @@ export default function AdminPage() {
         {!session ? (
           <section className="bg-bg-card border border-sage/30 rounded-2xl p-5 sm:p-6">
             <p className="text-ivory mb-4">진행 중인 세션이 없습니다. 새 세션을 시작하세요.</p>
-            <input
-              value={newSessionTitle}
-              onChange={(e) => setNewSessionTitle(e.target.value)}
-              className="w-full bg-bg border border-sage/40 rounded-xl px-4 py-3 text-ivory mb-3"
-            />
+            <label className="block text-sage text-sm mb-3">
+              행사·세션 이름
+              <input
+                value={newSessionTitle}
+                onChange={(e) => setNewSessionTitle(e.target.value)}
+                className="mt-1.5 w-full bg-bg border border-sage/40 rounded-xl px-4 py-3 text-ivory"
+              />
+            </label>
             <button
               onClick={handleCreateSession}
               className="bg-gold text-bg font-bold rounded-xl px-5 py-3"
@@ -302,106 +335,178 @@ export default function AdminPage() {
           <>
             <section className="forest-panel rounded-2xl p-5 sm:p-6 mb-6 flex flex-wrap gap-4 justify-between items-center">
               <div>
+                <p className="text-xs tracking-[0.18em] text-gold mb-1">현재 세션</p>
                 <p className="text-ivory font-bold">{session.title}</p>
                 <p className="text-sage text-sm">질문 {questions.length}개</p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={handleNewSession}
-                  className="text-gold border border-gold/40 rounded-xl px-4 py-2 text-sm"
-                >
-                  새 세션
-                </button>
-                <button
-                  onClick={handleResetAll}
-                  className="text-red-300 border border-red-400/40 rounded-xl px-4 py-2 text-sm"
-                >
-                  전체 투표 초기화
-                </button>
-              </div>
+              <span className="rounded-full border border-sage/30 px-3 py-1.5 text-xs text-sage">
+                행사 운영 중에는 이 세션을 유지하세요
+              </span>
             </section>
 
-            <section className="bg-bg-card border border-sage/30 rounded-2xl p-5 sm:p-6 mb-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <section
+              className="bg-bg-card border-2 border-gold/35 rounded-2xl p-5 sm:p-6 mb-6"
+              aria-live="polite"
+            >
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-ivory font-bold">결과 보관</p>
-                  <p className="text-sage text-sm mt-1">
-                    행사 종료 후 질문별 표와 비율을 복사하거나 Excel용 파일로 저장합니다.
-                  </p>
+                  <p className="text-xs tracking-[0.18em] text-gold mb-2">지금 할 일</p>
+                  {activeQuestion ? (
+                    <>
+                      <p className="text-gold font-bold text-xl">Q{activeQuestionIndex + 1} 투표 진행 중</p>
+                      <p className="text-ivory mt-1">
+                        {activeQuestion.option_a_text} <span className="text-sage">VS</span>{" "}
+                        {activeQuestion.option_b_text}
+                      </p>
+                      <p className="text-sage text-sm mt-2">현재 {activeQuestion.counts.total}명 참여</p>
+                    </>
+                  ) : nextDraftQuestion ? (
+                    <>
+                      <p className="text-ivory font-bold text-xl">
+                        {latestEndedQuestion ? `Q${latestEndedQuestionIndex + 1} 결과 공개 완료` : "첫 질문 시작 전"}
+                      </p>
+                      <p className="text-sage text-sm mt-2">
+                        다음은 Q{nextDraftQuestionIndex + 1} · {nextDraftQuestion.option_a_text} VS{" "}
+                        {nextDraftQuestion.option_b_text}
+                      </p>
+                    </>
+                  ) : questions.length === 0 ? (
+                    <>
+                      <p className="text-ivory font-bold text-xl">질문을 먼저 준비하세요</p>
+                      <p className="text-sage text-sm mt-2">아래 ‘행사 전 질문 준비’를 열어 질문을 등록합니다.</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-gold font-bold text-xl">모든 질문 진행 완료</p>
+                      <p className="text-sage text-sm mt-2">최종 결과 발표를 열고 질문별 결과를 넘겨주세요.</p>
+                    </>
+                  )}
                 </div>
-                <div className="grid grid-cols-2 gap-2 sm:flex">
-                  <button
-                    onClick={handleCopyResults}
-                    disabled={!questions.some((question) => question.counts.total > 0)}
-                    className="min-h-11 border border-gold/40 text-gold rounded-xl px-4 py-2 text-sm disabled:opacity-40"
+                <div className="flex flex-col gap-2 sm:min-w-48">
+                  {activeQuestion && (
+                    <button
+                      onClick={() => handleEnd(activeQuestion.id)}
+                      className="min-h-12 bg-optionB text-bg font-bold rounded-xl px-5 py-3"
+                    >
+                      Q{activeQuestionIndex + 1} 지금 종료
+                    </button>
+                  )}
+                  {!activeQuestion && nextDraftQuestion && (
+                    <button
+                      onClick={() => handleStart(nextDraftQuestion.id)}
+                      className="min-h-12 bg-gold text-bg font-bold rounded-xl px-5 py-3"
+                    >
+                      Q{nextDraftQuestionIndex + 1} 투표 시작
+                    </button>
+                  )}
+                  {!activeQuestion && !nextDraftQuestion && questions.length > 0 && (
+                    <a
+                      href="/final"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="min-h-12 bg-gold text-bg font-bold rounded-xl px-5 py-3 flex items-center justify-center"
+                    >
+                      최종 결과 발표 열기
+                    </a>
+                  )}
+                  <a
+                    href="/results"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="min-h-11 border border-sage/35 text-sage rounded-xl px-4 py-2 flex items-center justify-center text-sm"
                   >
-                    결과 복사
-                  </button>
-                  <button
-                    onClick={handleDownloadResults}
-                    disabled={!questions.some((question) => question.counts.total > 0)}
-                    className="min-h-11 bg-gold text-bg font-bold rounded-xl px-4 py-2 text-sm disabled:opacity-40"
-                  >
-                    Excel용 CSV
-                  </button>
+                    행사 진행 화면 확인
+                  </a>
                 </div>
               </div>
-              {exportNotice && <p className="text-sage text-sm mt-3" role="status">{exportNotice}</p>}
             </section>
 
-            <section className="bg-bg-card border border-sage/30 rounded-2xl p-5 sm:p-6 mb-6">
-              <p className="text-ivory font-bold mb-4">질문 추가</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                <input
-                  value={newAEmoji}
-                  onChange={(e) => setNewAEmoji(e.target.value)}
-                  placeholder="A 이모지 (선택)"
-                  className="bg-bg border border-sage/40 rounded-xl px-3 py-2 text-ivory text-sm"
-                />
-                <input
-                  value={newBEmoji}
-                  onChange={(e) => setNewBEmoji(e.target.value)}
-                  placeholder="B 이모지 (선택)"
-                  className="bg-bg border border-sage/40 rounded-xl px-3 py-2 text-ivory text-sm"
-                />
-                <input
-                  value={newA}
-                  onChange={(e) => setNewA(e.target.value)}
-                  placeholder="A 선택지 (예: 평생 여름)"
-                  className="bg-bg border border-sage/40 rounded-xl px-3 py-2 text-ivory text-sm"
-                />
-                <input
-                  value={newB}
-                  onChange={(e) => setNewB(e.target.value)}
-                  placeholder="B 선택지 (예: 평생 겨울)"
-                  className="bg-bg border border-sage/40 rounded-xl px-3 py-2 text-ivory text-sm"
-                />
+            <details
+              className="bg-bg-card border border-sage/30 rounded-2xl p-5 sm:p-6 mb-6"
+              open={questions.length === 0 ? true : undefined}
+            >
+              <summary className="cursor-pointer min-h-11 flex items-center justify-between font-bold text-ivory">
+                <span>행사 전 질문 준비</span>
+                <span className="text-sage text-sm font-normal">질문 추가·제한시간 설정</span>
+              </summary>
+              <div className="pt-5 mt-2 border-t border-sage/20">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <fieldset className="rounded-xl border border-optionA/35 p-4">
+                    <legend className="px-2 text-optionA font-bold">A 선택지</legend>
+                    <label className="block text-sage text-sm mb-3">
+                      선택지 문구
+                      <input
+                        value={newA}
+                        onChange={(e) => setNewA(e.target.value)}
+                        placeholder="예: 평생 여름"
+                        className="mt-1.5 w-full bg-bg border border-sage/40 rounded-xl px-3 py-2.5 text-ivory"
+                      />
+                    </label>
+                    <label className="block text-sage text-sm">
+                      이모지 (선택)
+                      <input
+                        value={newAEmoji}
+                        onChange={(e) => setNewAEmoji(e.target.value)}
+                        placeholder="예: ☀️"
+                        className="mt-1.5 w-full bg-bg border border-sage/40 rounded-xl px-3 py-2.5 text-ivory"
+                      />
+                    </label>
+                  </fieldset>
+
+                  <fieldset className="rounded-xl border border-optionB/35 p-4">
+                    <legend className="px-2 text-optionB font-bold">B 선택지</legend>
+                    <label className="block text-sage text-sm mb-3">
+                      선택지 문구
+                      <input
+                        value={newB}
+                        onChange={(e) => setNewB(e.target.value)}
+                        placeholder="예: 평생 겨울"
+                        className="mt-1.5 w-full bg-bg border border-sage/40 rounded-xl px-3 py-2.5 text-ivory"
+                      />
+                    </label>
+                    <label className="block text-sage text-sm">
+                      이모지 (선택)
+                      <input
+                        value={newBEmoji}
+                        onChange={(e) => setNewBEmoji(e.target.value)}
+                        placeholder="예: ❄️"
+                        className="mt-1.5 w-full bg-bg border border-sage/40 rounded-xl px-3 py-2.5 text-ivory"
+                      />
+                    </label>
+                  </fieldset>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <label className="text-sage text-sm">
+                    투표 제한시간
+                    <select
+                      value={newTime}
+                      onChange={(e) => setNewTime(Number(e.target.value))}
+                      className="mt-1.5 block bg-bg border border-sage/40 rounded-xl px-3 py-2.5 text-ivory"
+                    >
+                      <option value={30}>30초</option>
+                      <option value={60}>60초</option>
+                      <option value={90}>90초</option>
+                    </select>
+                  </label>
+                  <button
+                    onClick={handleAddQuestion}
+                    disabled={!newA.trim() || !newB.trim()}
+                    className="min-h-11 bg-gold text-bg font-bold rounded-xl px-5 py-2.5 text-sm disabled:opacity-40"
+                  >
+                    질문 추가
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-3 mb-4">
-                <label className="text-sage text-sm">제한시간(초)</label>
-                <select
-                  value={newTime}
-                  onChange={(e) => setNewTime(Number(e.target.value))}
-                  className="bg-bg border border-sage/40 rounded-xl px-3 py-2 text-ivory text-sm"
-                >
-                  <option value={30}>30초</option>
-                  <option value={60}>60초</option>
-                  <option value={90}>90초</option>
-                </select>
-              </div>
-              <button
-                onClick={handleAddQuestion}
-                className="bg-gold text-bg font-bold rounded-xl px-5 py-2.5 text-sm"
-              >
-                질문 추가
-              </button>
-            </section>
+            </details>
 
             <section className="flex flex-col gap-3">
               {questions.map((q, i) => (
                 <div
                   key={q.id}
-                  className="bg-bg-card border border-sage/30 rounded-2xl p-5"
+                  className={`bg-bg-card border rounded-2xl p-5 ${
+                    q.status === "active" ? "border-gold/70 ring-1 ring-gold/20" : "border-sage/30"
+                  }`}
                 >
                   <div className="flex justify-between items-start gap-3 mb-3">
                     <div className="min-w-0">
@@ -414,17 +519,6 @@ export default function AdminPage() {
                         <span className="text-sage font-normal">VS</span> {q.option_b_emoji}{" "}
                         {q.option_b_text}
                       </p>
-                    </div>
-                    <div className="flex flex-col gap-1 items-end text-xs text-sage">
-                      <button onClick={() => handleReorder(q.id, -1)} disabled={i === 0}>
-                        ▲ 위로
-                      </button>
-                      <button
-                        onClick={() => handleReorder(q.id, 1)}
-                        disabled={i === questions.length - 1}
-                      >
-                        ▼ 아래로
-                      </button>
                     </div>
                   </div>
 
@@ -440,42 +534,120 @@ export default function AdminPage() {
                     <span className="text-sage">총 {q.counts.total}명</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                  <div className="flex flex-wrap gap-2">
                     {q.status === "draft" && (
                       <button
                         onClick={() => handleStart(q.id)}
-                        className="col-span-2 min-h-11 bg-gold text-bg font-bold rounded-xl px-4 py-2 text-xs sm:col-span-1 sm:rounded-full"
+                        className="min-h-11 w-full bg-gold text-bg font-bold rounded-xl px-4 py-2 text-sm sm:w-auto sm:rounded-full"
                       >
-                        투표 시작
+                        Q{i + 1} 투표 시작
                       </button>
                     )}
                     {q.status === "active" && (
                       <button
                         onClick={() => handleEnd(q.id)}
-                        className="col-span-2 min-h-11 bg-optionB text-bg font-bold rounded-xl px-4 py-2 text-xs sm:col-span-1 sm:rounded-full"
+                        className="min-h-11 w-full bg-optionB text-bg font-bold rounded-xl px-4 py-2 text-sm sm:w-auto sm:rounded-full"
                       >
-                        지금 종료
+                        Q{i + 1} 지금 종료
                       </button>
                     )}
-                    <button
-                      onClick={() => handleResetQuestion(q.id)}
-                      className="min-h-11 border border-sage/40 text-sage rounded-xl px-4 py-2 text-xs sm:rounded-full"
-                    >
-                      초기화
-                    </button>
-                    <button
-                      onClick={() => handleDelete(q.id)}
-                      className="min-h-11 border border-red-400/40 text-red-300 rounded-xl px-4 py-2 text-xs sm:rounded-full"
-                    >
-                      삭제
-                    </button>
                   </div>
+
+                  <details className="mt-3 border-t border-sage/15 pt-3">
+                    <summary className="cursor-pointer min-h-10 flex items-center justify-between text-xs text-sage">
+                      <span>질문 관리</span>
+                      <span>순서 변경 · 투표 지우기 · 삭제</span>
+                    </summary>
+                    <div className="grid grid-cols-2 gap-2 pt-3 sm:flex sm:flex-wrap">
+                      <button
+                        onClick={() => handleReorder(q.id, -1)}
+                        disabled={i === 0}
+                        className="min-h-10 border border-sage/30 text-sage rounded-xl px-3 py-2 text-xs disabled:opacity-30"
+                      >
+                        ▲ 위로 이동
+                      </button>
+                      <button
+                        onClick={() => handleReorder(q.id, 1)}
+                        disabled={i === questions.length - 1}
+                        className="min-h-10 border border-sage/30 text-sage rounded-xl px-3 py-2 text-xs disabled:opacity-30"
+                      >
+                        ▼ 아래로 이동
+                      </button>
+                      <button
+                        onClick={() => handleResetQuestion(q.id)}
+                        className="min-h-10 border border-sage/40 text-sage rounded-xl px-3 py-2 text-xs"
+                      >
+                        이 질문 투표 지우기
+                      </button>
+                      <button
+                        onClick={() => handleDelete(q.id)}
+                        className="min-h-10 border border-red-400/40 text-red-300 rounded-xl px-3 py-2 text-xs"
+                      >
+                        질문 삭제
+                      </button>
+                    </div>
+                  </details>
                 </div>
               ))}
               {questions.length === 0 && (
                 <p className="text-sage text-center py-8">아직 등록된 질문이 없습니다.</p>
               )}
             </section>
+
+            <section className="bg-bg-card border border-sage/30 rounded-2xl p-5 sm:p-6 mt-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-ivory font-bold">행사 종료 후 결과 보관</p>
+                  <p className="text-sage text-sm mt-1">
+                    질문별 표와 비율을 복사하거나 Excel용 파일로 저장합니다.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:flex">
+                  <button
+                    onClick={handleCopyResults}
+                    disabled={!hasVotes}
+                    className="min-h-11 border border-gold/40 text-gold rounded-xl px-4 py-2 text-sm disabled:opacity-40"
+                  >
+                    결과 복사
+                  </button>
+                  <button
+                    onClick={handleDownloadResults}
+                    disabled={!hasVotes}
+                    className="min-h-11 bg-gold text-bg font-bold rounded-xl px-4 py-2 text-sm disabled:opacity-40"
+                  >
+                    Excel용 CSV
+                  </button>
+                </div>
+              </div>
+              {!hasVotes && <p className="text-sage/70 text-xs mt-3">투표 결과가 생기면 버튼이 활성화됩니다.</p>}
+              {exportNotice && <p className="text-sage text-sm mt-3" role="status">{exportNotice}</p>}
+            </section>
+
+            <details className="rounded-2xl border border-red-400/25 bg-red-950/10 p-5 mt-6">
+              <summary className="cursor-pointer min-h-11 flex items-center justify-between text-red-200 font-bold">
+                <span>행사 준비·관리</span>
+                <span className="text-xs font-normal text-red-100/70">행사 중에는 열지 마세요</span>
+              </summary>
+              <div className="pt-4 mt-2 border-t border-red-400/20">
+                <p className="text-red-100/75 text-sm mb-4">
+                  새 세션 시작과 전체 투표 초기화는 현재 행사 흐름을 바꿉니다. 리허설 직후나 담당자 확인 후에만 사용하세요.
+                </p>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <button
+                    onClick={handleNewSession}
+                    className="min-h-11 text-gold border border-gold/40 rounded-xl px-4 py-2 text-sm"
+                  >
+                    새 세션 시작
+                  </button>
+                  <button
+                    onClick={handleResetAll}
+                    className="min-h-11 text-red-200 border border-red-400/40 rounded-xl px-4 py-2 text-sm"
+                  >
+                    현재 세션 전체 투표 초기화
+                  </button>
+                </div>
+              </div>
+            </details>
           </>
         )}
           </div>
