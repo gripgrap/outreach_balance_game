@@ -84,24 +84,18 @@ drop policy if exists "public read votes" on votes;
 drop policy if exists "public insert votes" on votes;
 drop policy if exists "public insert participants" on participants;
 
--- 원본 투표(닉네임/client_token)는 공개하지 않고 집계값만 anon 사용자에게 제공한다.
-create or replace function public.get_vote_counts(target_question_id uuid)
-returns table(a bigint, b bigint, total bigint)
-language sql
-security definer
-set search_path = public
-stable
-as $$
-  select
-    count(*) filter (where choice = 'A') as a,
-    count(*) filter (where choice = 'B') as b,
-    count(*) as total
-  from votes
-  where question_id = target_question_id;
-$$;
+-- 득표 집계는 service-role을 사용하는 /api/counts 서버 라우트에서 수행한다.
+drop function if exists public.get_vote_counts(uuid);
 
-revoke all on function public.get_vote_counts(uuid) from public;
-grant execute on function public.get_vote_counts(uuid) to anon, authenticated;
+-- 프로젝트 생성 시 만들어진 RLS 자동 활성화 함수는 트리거 내부에서만 사용하며
+-- Data API 역할이 직접 실행할 필요가 없다.
+do $$
+begin
+  if to_regprocedure('public.rls_auto_enable()') is not null then
+    revoke execute on function public.rls_auto_enable() from public, anon, authenticated;
+  end if;
+end
+$$;
 
 -- sessions/questions 의 write(관리자 기능)는 anon key로 직접 열지 않고
 -- 아래 "관리자 전용" 정책을 사용한다. anon 사용자는 write 불가 (정책 없음 = 기본 거부).
