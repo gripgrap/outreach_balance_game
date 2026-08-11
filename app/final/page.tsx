@@ -86,6 +86,17 @@ export default function FinalDashboard() {
     );
   }
 
+  if (data.questions.length === 0) {
+    return (
+      <main className="grain-overlay min-h-screen flex flex-col items-center justify-center px-6 text-center">
+        <BrandHeader large />
+        <p className="font-display text-5xl text-gold text-glow mt-8">FINAL RESULTS</p>
+        <p className="text-ivory text-2xl mt-8">아직 발표할 투표 결과가 없습니다</p>
+        <p className="text-sage mt-3">질문 투표를 진행한 뒤 이 화면을 다시 열어주세요</p>
+      </main>
+    );
+  }
+
   const questionIndex = slide - 1; // 1-based slides map to question array
 
   return (

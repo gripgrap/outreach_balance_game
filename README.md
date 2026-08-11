@@ -9,16 +9,16 @@
 
 - 모바일 참가자 투표 및 브라우저별 중복 투표 방지
 - 관리자 비밀번호 로그인, 세션·질문 생성, 순서 변경, 시작·종료·초기화
-- 진행 중 결과(`/results`)와 전체 결과(`/final`) 발표 화면
+- 행사 진행 화면(`/results`)과 최종 결과 발표(`/final`) 화면
 - Supabase 기반 데이터 저장 및 집계
 - 행사 현장 네트워크를 고려한 주기적 자동 갱신
 - GitHub Actions 품질 검사와 Vercel 자동 배포
 
 ## 화면
 
-| 참가자 | 관리자 | 결과 화면 |
+| 참가자 | 관리자 | 행사 진행 화면 |
 |---|---|---|
-| <img src="docs/images/participant.png" alt="참가자 닉네임 입력 화면" width="100%"> | <img src="docs/images/admin.png" alt="관리자 운영 화면" width="100%"> | <img src="docs/images/results.png" alt="실시간 결과 대기 화면" width="100%"> |
+| <img src="docs/images/participant.png" alt="참가자 닉네임 입력 화면" width="100%"> | <img src="docs/images/admin.png" alt="관리자 운영 화면" width="100%"> | <img src="docs/images/results.png" alt="행사 진행 대기 화면" width="100%"> |
 
 ## 행사 당일 링크
 
@@ -26,8 +26,8 @@
 |---|---|
 | 참가자 | [사이트 열기](https://outreach-balance-game-live.vercel.app/) | 참가자 모바일 투표·QR 연결 주소 |
 | 관리자 | [관리자 열기](https://outreach-balance-game-live.vercel.app/admin) | 진행자용 운영 화면 |
-| 실시간 결과 | [결과 화면 열기](https://outreach-balance-game-live.vercel.app/results) | 프로젝터에 띄울 현재 질문 결과 |
-| 최종 결과 | [엔딩 화면 열기](https://outreach-balance-game-live.vercel.app/final) | 종료된 질문 전체 결과 |
+| 행사 진행 화면 | [진행 화면 열기](https://outreach-balance-game-live.vercel.app/results) | 질문·카운트다운·종료 결과를 프로젝터에 표시 |
+| 최종 결과 발표 | [최종 발표 열기](https://outreach-balance-game-live.vercel.app/final) | 실제 투표가 있었던 질문의 결과 슬라이드 |
 
 ## 기술 구성
 
@@ -56,8 +56,8 @@ npm run dev
 
 ## 현장 운영 요약
 
-1. 행사 전에 실제 세션과 질문을 입력해 참가자·관리자·결과 화면을 점검합니다.
-2. 실제 진행 직전에 `전체 투표 초기화`로 리허설 투표만 지웁니다. `새 세션`은 질문을 복사하지 않습니다.
+1. 행사 전에 실제 세션과 질문을 입력해 참가자·관리자·행사 진행 화면을 점검합니다.
+2. 실제 진행 직전에 맨 아래 `행사 준비·관리`에서 리허설 투표만 초기화합니다. `새 세션`은 질문을 복사하지 않습니다.
 3. 참가자에게 `/` QR을 공유하고 발표 장비에서는 `/results`를 전체 화면으로 엽니다.
 4. 질문을 차례로 시작·종료한 뒤 `/final`로 전체 결과를 보여줍니다.
 
