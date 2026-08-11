@@ -1,3 +1,8 @@
+/**
+ * File: app/api/admin/questions/reorder/route.ts
+ * 관리자 화면에서 지정한 순서대로 질문 순번을 저장하는 API다.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";

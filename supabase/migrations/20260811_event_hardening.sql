@@ -1,3 +1,4 @@
+-- File: supabase/migrations/20260811_event_hardening.sql - 기존 프로젝트에 행사 안정성·보안 수정을 적용한다.
 -- 기존 Supabase 프로젝트에 행사 안정성/보안 수정 적용
 -- Supabase Dashboard > SQL Editor에서 한 번 실행하세요.
 

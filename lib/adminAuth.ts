@@ -1,3 +1,8 @@
+/**
+ * File: lib/adminAuth.ts
+ * 관리자 로그인 쿠키의 생성·삭제·검증 로직을 제공한다.
+ */
+
 import { cookies } from "next/headers";
 import { createHmac, timingSafeEqual } from "crypto";
 

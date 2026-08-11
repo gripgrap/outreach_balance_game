@@ -1,3 +1,8 @@
+/**
+ * File: app/api/counts/route.ts
+ * 공개 투표 행을 노출하지 않고 질문별 A·B 합계만 반환하는 API다.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 

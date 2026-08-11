@@ -1,3 +1,8 @@
+/**
+ * File: app/api/admin/login/route.ts
+ * 관리자 비밀번호를 검증하고 로그인 쿠키를 발급하는 API다.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE, createAdminSessionToken } from "@/lib/adminAuth";
 

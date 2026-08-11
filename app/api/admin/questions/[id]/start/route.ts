@@ -1,3 +1,8 @@
+/**
+ * File: app/api/admin/questions/[id]/start/route.ts
+ * 선택한 질문을 시작하고 기존 진행 질문을 종료하는 관리자 API다.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";

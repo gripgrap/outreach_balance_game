@@ -1,3 +1,8 @@
+/**
+ * File: app/api/admin/questions/route.ts
+ * 현재 세션에 새 밸런스 게임 질문을 추가하는 관리자 API다.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";

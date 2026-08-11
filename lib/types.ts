@@ -1,3 +1,8 @@
+/**
+ * File: lib/types.ts
+ * 세션·질문·투표·집계에 공통으로 사용하는 TypeScript 타입을 정의한다.
+ */
+
 export type QuestionStatus = "draft" | "active" | "ended";
 
 export interface Session {

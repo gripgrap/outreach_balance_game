@@ -1,3 +1,8 @@
+/**
+ * File: lib/supabaseAdmin.ts
+ * 서버 전용 비밀 키로 관리자 Supabase 클라이언트를 생성한다.
+ */
+
 import { createClient } from "@supabase/supabase-js";
 
 // 이 파일은 서버(Route Handler)에서만 import 해야 한다.

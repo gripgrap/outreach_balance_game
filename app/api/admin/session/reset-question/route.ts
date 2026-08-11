@@ -1,3 +1,8 @@
+/**
+ * File: app/api/admin/session/reset-question/route.ts
+ * 질문 하나의 투표를 삭제하고 대기 상태로 되돌리는 관리자 API다.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";

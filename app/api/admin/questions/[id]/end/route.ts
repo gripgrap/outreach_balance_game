@@ -1,3 +1,8 @@
+/**
+ * File: app/api/admin/questions/[id]/end/route.ts
+ * 진행 중인 질문을 즉시 종료하는 관리자 API다.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";

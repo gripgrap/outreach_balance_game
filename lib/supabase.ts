@@ -1,3 +1,8 @@
+/**
+ * File: lib/supabase.ts
+ * 공개 키로 참가자 브라우저용 Supabase 클라이언트를 생성한다.
+ */
+
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;

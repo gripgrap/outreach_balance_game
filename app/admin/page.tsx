@@ -1,8 +1,15 @@
+/**
+ * File: app/admin/page.tsx
+ * 행사 담당자가 세션·질문·투표·결과 내보내기를 관리하는 관리자 화면이다.
+ */
+
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
 import type { QuestionWithResults, Session } from "@/lib/types";
 import { BrandHeader } from "@/components/BrandHeader";
+import { AdminGuide } from "@/components/AdminGuide";
+import { buildResultCopyText, buildResultCsv, resultFilename } from "@/lib/exportResults";
 
 async function api(path: string, options?: RequestInit) {
   const res = await fetch(path, {
@@ -22,6 +29,7 @@ export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [questions, setQuestions] = useState<QuestionWithResults[]>([]);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [exportNotice, setExportNotice] = useState<string | null>(null);
 
   const [newA, setNewA] = useState("");
   const [newAEmoji, setNewAEmoji] = useState("");
@@ -182,6 +190,33 @@ export default function AdminPage() {
     }
   }
 
+  async function handleCopyResults() {
+    if (!session) return;
+    setExportNotice(null);
+    try {
+      await navigator.clipboard.writeText(buildResultCopyText(session, questions));
+      setExportNotice("결과를 클립보드에 복사했습니다.");
+    } catch {
+      setExportNotice("복사하지 못했습니다. Excel용 CSV 다운로드를 사용해 주세요.");
+    }
+  }
+
+  function handleDownloadResults() {
+    if (!session) return;
+    const blob = new Blob([buildResultCsv(session, questions)], {
+      type: "text/csv;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = resultFilename(session);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setExportNotice("Excel용 CSV 파일을 저장했습니다.");
+  }
+
   if (authed === null) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-bg">
@@ -220,10 +255,10 @@ export default function AdminPage() {
 
   return (
     <main className="grain-overlay min-h-screen bg-transparent px-4 py-8 md:px-10">
-      <div className="max-w-3xl mx-auto">
-        <header className="flex justify-between items-center mb-8">
+      <div className="max-w-6xl mx-auto">
+        <header className="flex flex-col gap-5 items-center mb-8 sm:flex-row sm:justify-between">
           <BrandHeader />
-          <div className="flex gap-3 text-sm">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm sm:justify-end">
             <a href="/results" target="_blank" className="text-sage underline">
               결과화면 열기
             </a>
@@ -242,8 +277,14 @@ export default function AdminPage() {
           </p>
         )}
 
+        <div className="lg:hidden">
+          <AdminGuide collapsible />
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+          <div>
         {!session ? (
-          <section className="bg-bg-card border border-sage/30 rounded-2xl p-6">
+          <section className="bg-bg-card border border-sage/30 rounded-2xl p-5 sm:p-6">
             <p className="text-ivory mb-4">진행 중인 세션이 없습니다. 새 세션을 시작하세요.</p>
             <input
               value={newSessionTitle}
@@ -259,7 +300,7 @@ export default function AdminPage() {
           </section>
         ) : (
           <>
-            <section className="forest-panel rounded-2xl p-6 mb-6 flex flex-wrap gap-4 justify-between items-center">
+            <section className="forest-panel rounded-2xl p-5 sm:p-6 mb-6 flex flex-wrap gap-4 justify-between items-center">
               <div>
                 <p className="text-ivory font-bold">{session.title}</p>
                 <p className="text-sage text-sm">질문 {questions.length}개</p>
@@ -280,9 +321,37 @@ export default function AdminPage() {
               </div>
             </section>
 
-            <section className="bg-bg-card border border-sage/30 rounded-2xl p-6 mb-6">
+            <section className="bg-bg-card border border-sage/30 rounded-2xl p-5 sm:p-6 mb-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-ivory font-bold">결과 보관</p>
+                  <p className="text-sage text-sm mt-1">
+                    행사 종료 후 질문별 표와 비율을 복사하거나 Excel용 파일로 저장합니다.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:flex">
+                  <button
+                    onClick={handleCopyResults}
+                    disabled={!questions.some((question) => question.counts.total > 0)}
+                    className="min-h-11 border border-gold/40 text-gold rounded-xl px-4 py-2 text-sm disabled:opacity-40"
+                  >
+                    결과 복사
+                  </button>
+                  <button
+                    onClick={handleDownloadResults}
+                    disabled={!questions.some((question) => question.counts.total > 0)}
+                    className="min-h-11 bg-gold text-bg font-bold rounded-xl px-4 py-2 text-sm disabled:opacity-40"
+                  >
+                    Excel용 CSV
+                  </button>
+                </div>
+              </div>
+              {exportNotice && <p className="text-sage text-sm mt-3" role="status">{exportNotice}</p>}
+            </section>
+
+            <section className="bg-bg-card border border-sage/30 rounded-2xl p-5 sm:p-6 mb-6">
               <p className="text-ivory font-bold mb-4">질문 추가</p>
-              <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                 <input
                   value={newAEmoji}
                   onChange={(e) => setNewAEmoji(e.target.value)}
@@ -334,8 +403,8 @@ export default function AdminPage() {
                   key={q.id}
                   className="bg-bg-card border border-sage/30 rounded-2xl p-5"
                 >
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
+                  <div className="flex justify-between items-start gap-3 mb-3">
+                    <div className="min-w-0">
                       <p className="text-sage text-xs mb-1">
                         Q{i + 1} · {q.time_limit_sec}초 ·{" "}
                         <StatusBadge status={q.status} />
@@ -359,7 +428,7 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center text-sm mb-3">
+                  <div className="flex flex-wrap justify-between items-center gap-2 text-sm mb-3">
                     <span className="text-optionA">
                       A {q.counts.a}표 (
                       {q.counts.total ? Math.round((q.counts.a / q.counts.total) * 100) : 0}%)
@@ -371,11 +440,11 @@ export default function AdminPage() {
                     <span className="text-sage">총 {q.counts.total}명</span>
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                     {q.status === "draft" && (
                       <button
                         onClick={() => handleStart(q.id)}
-                        className="bg-gold text-bg font-bold rounded-full px-4 py-1.5 text-xs"
+                        className="col-span-2 min-h-11 bg-gold text-bg font-bold rounded-xl px-4 py-2 text-xs sm:col-span-1 sm:rounded-full"
                       >
                         투표 시작
                       </button>
@@ -383,20 +452,20 @@ export default function AdminPage() {
                     {q.status === "active" && (
                       <button
                         onClick={() => handleEnd(q.id)}
-                        className="bg-optionB text-bg font-bold rounded-full px-4 py-1.5 text-xs"
+                        className="col-span-2 min-h-11 bg-optionB text-bg font-bold rounded-xl px-4 py-2 text-xs sm:col-span-1 sm:rounded-full"
                       >
                         지금 종료
                       </button>
                     )}
                     <button
                       onClick={() => handleResetQuestion(q.id)}
-                      className="border border-sage/40 text-sage rounded-full px-4 py-1.5 text-xs"
+                      className="min-h-11 border border-sage/40 text-sage rounded-xl px-4 py-2 text-xs sm:rounded-full"
                     >
                       초기화
                     </button>
                     <button
                       onClick={() => handleDelete(q.id)}
-                      className="border border-red-400/40 text-red-300 rounded-full px-4 py-1.5 text-xs"
+                      className="min-h-11 border border-red-400/40 text-red-300 rounded-xl px-4 py-2 text-xs sm:rounded-full"
                     >
                       삭제
                     </button>
@@ -409,6 +478,11 @@ export default function AdminPage() {
             </section>
           </>
         )}
+          </div>
+          <div className="hidden lg:block lg:sticky lg:top-6">
+            <AdminGuide />
+          </div>
+        </div>
       </div>
     </main>
   );

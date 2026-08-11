@@ -1,3 +1,8 @@
+/**
+ * File: app/api/admin/state/route.ts
+ * 관리자 화면에 현재 세션·질문·집계 상태를 제공하는 API다.
+ */
+
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
