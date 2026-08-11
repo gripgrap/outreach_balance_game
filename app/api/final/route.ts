@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const db = getSupabaseAdmin();
 
@@ -11,7 +13,10 @@ export async function GET() {
     .maybeSingle();
 
   if (!session) {
-    return NextResponse.json({ session: null, questions: [], totalParticipants: 0 });
+    return NextResponse.json(
+      { session: null, questions: [], totalParticipants: 0 },
+      { headers: { "Cache-Control": "no-store" } }
+    );
   }
 
   const { data: questions } = await db
@@ -51,11 +56,14 @@ export async function GET() {
     ? answered.reduce((min, q) => (q.gap < min.gap ? q : min))
     : null;
 
-  return NextResponse.json({
-    session,
-    questions: questionsWithResults,
-    totalParticipants: uniqueParticipants,
-    mostLopsided,
-    closest,
-  });
+  return NextResponse.json(
+    {
+      session,
+      questions: questionsWithResults,
+      totalParticipants: uniqueParticipants,
+      mostLopsided,
+      closest,
+    },
+    { headers: { "Cache-Control": "no-store" } }
+  );
 }
