@@ -13,13 +13,9 @@
 
 ## 화면
 
-> UI 스크린샷 추가 예정
->
-> 권장 구성: 참가자 투표 화면(모바일) / 관리자 화면 / 실시간 결과 화면
-
 | 참가자 | 관리자 | 결과 화면 |
 |---|---|---|
-| `docs/images/participant.png` | `docs/images/admin.png` | `docs/images/results.png` |
+| <img src="docs/images/participant.png" alt="참가자 닉네임 입력 화면" width="100%"> | <img src="docs/images/admin.png" alt="관리자 운영 화면" width="100%"> | <img src="docs/images/results.png" alt="실시간 결과 대기 화면" width="100%"> |
 
 ## 서비스 경로
 
@@ -61,6 +57,8 @@ npm run dev
 2. 실제 진행 직전에 새 세션을 만들어 테스트 데이터를 분리합니다.
 3. 참가자에게 `/` QR을 공유하고 발표 장비에서는 `/results`를 전체 화면으로 엽니다.
 4. 질문을 차례로 시작·종료한 뒤 `/final`로 전체 결과를 보여줍니다.
+
+담당자에게 전달할 준비·리허설·당일 진행·장애 대응 절차는 [행사 운영 시나리오](docs/행사-운영-시나리오.md)를 참고하세요.
 
 ## 라이선스
 
